@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,23 +12,29 @@ import (
 
 // Server is config interface
 type Server struct {
-	Port int `default:"7654"`
+	Port                  int
+	GithubReleaseJSONPath string
+	APIName               string
 }
 
-//Handler is request Handler
+var serverDefaultConf = new(Server)
+
+// Handler is request Handler
 func Handler(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Print("error")
+	}
+	ioutil.WriteFile(serverDefaultConf.GithubReleaseJSONPath, body, 0777)
 	w.Write([]byte("ok"))
 }
 
 func main() {
-	r := mux.NewRouter()
-	// Routes consist of a path and a handler function.
-	r.HandleFunc("/", Handler)
 
 	defaultConf := multiconfig.NewWithPath("config.default.toml")
 	localConf := multiconfig.NewWithPath("config.toml") // supports TOML and JSON
 	// Get an empty struct for your configuration
-	serverDefaultConf := new(Server)
+
 	serverUserConf := new(Server)
 
 	// Populated the serverConf struct
@@ -39,7 +46,14 @@ func main() {
 		log.Print("no config.toml, but it is ok")
 	} else {
 		serverDefaultConf.Port = serverUserConf.Port
+		serverDefaultConf.APIName = serverUserConf.APIName
+		serverDefaultConf.GithubReleaseJSONPath = serverUserConf.GithubReleaseJSONPath
 	}
+
+	r := mux.NewRouter()
+	url := "/github-electerm-api/" + serverDefaultConf.APIName
+	r.HandleFunc(url, Handler).
+		Methods("POST")
 
 	addr := "localhost:" + strconv.Itoa(serverDefaultConf.Port)
 	log.Print("server runs on ", addr)
