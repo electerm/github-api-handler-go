@@ -5,5 +5,6 @@
 git clone git@github.com:electerm/github-api-handler-go.git
 cd github-api-handler-go
 cp config.sample.toml config.toml
+./init
 go run app.go
 ```
