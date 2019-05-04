@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/koding/multiconfig"
@@ -25,8 +26,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Print("error")
 	}
-	ioutil.WriteFile(serverDefaultConf.GithubReleaseJSONPath, body, 0777)
-	w.Write([]byte("ok"))
+	str0 := string(body)
+	if strings.Contains(str0, "\"published\"") {
+		ioutil.WriteFile(serverDefaultConf.GithubReleaseJSONPath, body, 0777)
+		w.Write([]byte("ok"))
+	} else {
+		w.Write([]byte("ok"))
+	}
 }
 
 func main() {
