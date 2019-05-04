@@ -31,7 +31,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		ioutil.WriteFile(serverDefaultConf.GithubReleaseJSONPath, body, 0777)
 		w.Write([]byte("ok"))
 	} else {
-		w.Write([]byte("ok"))
+		w.Write([]byte("no"))
 	}
 }
 
